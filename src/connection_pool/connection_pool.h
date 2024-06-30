@@ -57,7 +57,8 @@ private:
     // 同步相关
     mutable std::mutex _mtx;
     // 连接创建/销毁线程条件变量
-    mutable std::condition_variable _cv_manage;
+    mutable std::condition_variable _cv_create;
+    mutable std::condition_variable _cv_destroy;
     // 获取连接线程条件变量
     mutable std::condition_variable _cv_get;
 
@@ -120,7 +121,7 @@ typename ConnectionPool<Connection>::ConnectionPtr
     printf("a connection was used\n");
 
     // 通知创建/销毁连接线程
-    _cv_manage.notify_all();
+    _cv_create.notify_one();
     return conn;
 }
 
@@ -143,7 +144,8 @@ ConnectionPool<Connection>::~ConnectionPool() {
         _stop = true;
     }
     // 通知创建/释放连接线程，并等待结束
-    _cv_manage.notify_all();
+    _cv_create.notify_one();
+    _cv_destroy.notify_one();
     _create->join();
     _destroy->join();
 
@@ -151,7 +153,7 @@ ConnectionPool<Connection>::~ConnectionPool() {
     {
         std::unique_lock<std::mutex> uq(_mtx);
         while(_total) {
-            _cv_manage.wait(uq, [this](){ return !_connections.empty(); });
+            _cv_destroy.wait(uq, [this](){ return !_connections.empty(); });
             while(!_connections.empty()) destroy_connection();
         }
     }
@@ -190,7 +192,7 @@ void ConnectionPool<Connection>::recycle_connection(Connection* p) {
     _cv_get.notify_one();
 
     // 通知创建/销毁线程
-    _cv_manage.notify_all();
+    _cv_destroy.notify_one();
     printf("recycle a connection\n");
 }
 
@@ -201,7 +203,7 @@ void ConnectionPool<Connection>::create_routing() {
         // 总连接数（正在使用的连接 + 空闲连接）超过上限时，不再创建新的连接
         // 当线程池中连接数小于最小值时，需要向池中添加新连接
         // stop 也算唤醒成功，否则可能会再次陷入睡眠，导致线程无法结束
-        _cv_manage.wait(uq, [this]() {
+        _cv_create.wait(uq, [this]() {
             return (_total < _pool_opt->limit() && _connections.size() < _pool_opt->mn()) || _stop;
         });
 
@@ -227,7 +229,7 @@ void ConnectionPool<Connection>::destroy_routing() {
 
         std::unique_lock<std::mutex> uq(_mtx);
         // stop 也算唤醒成功，否则可能会再次陷入睡眠，导致线程无法结束
-        _cv_manage.wait(uq, [this, check]() { return check() || _stop; });
+        _cv_destroy.wait(uq, [this, check]() { return check() || _stop; });
 
         // stop 唤醒，直接退出循环，结束线程
         if(_stop) break;
