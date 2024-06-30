@@ -9,12 +9,13 @@
 class ConnectionPoolOption {
 private:
     // 连接池中连接的最小数量和最大数量
-    size_t _mn, _mx;
+    size_t _mn, _mx, _limit;
     // 连接距离上次使用空闲时间阈值
     size_t _idle;
 public:
     // load from config file generally
-    explicit ConnectionPoolOption(size_t mn = 16, size_t mx = 32, size_t idle = 10000) : _mn(mn), _mx(mx), _idle(idle) {}
+    explicit ConnectionPoolOption(size_t mn = 4, size_t mx = 16, size_t limit = 64, size_t idle = 10000)
+        : _mn(mn), _mx(mx), _limit(limit), _idle(idle) {}
 
     size_t mn() const {
         return _mn;
@@ -26,6 +27,10 @@ public:
 
     size_t idle() const {
         return _idle;
+    }
+
+    size_t limit() const {
+        return _limit;
     }
 };
 
@@ -158,6 +163,7 @@ void ConnectionPool<Connection>::create_connection() {
     if(conn->connect({1, 5000})) {
         _connections.push(conn);
         _total++;
+        assert(_total <= _pool_opt->limit() && "total connections > limit");
     }
 }
 
@@ -192,16 +198,19 @@ template<typename Connection>
 void ConnectionPool<Connection>::create_routing() {
     while(true) {
         std::unique_lock<std::mutex> uq(_mtx);
+        // 总连接数（正在使用的连接 + 空闲连接）超过上限时，不再创建新的连接
         // 当线程池中连接数小于最小值时，需要向池中添加新连接
         // stop 也算唤醒成功，否则可能会再次陷入睡眠，导致线程无法结束
-        _cv_manage.wait(uq, [this]() { return _connections.size() < _pool_opt->mn() || _stop; });
+        _cv_manage.wait(uq, [this]() {
+            return (_total < _pool_opt->limit() && _connections.size() < _pool_opt->mn()) || _stop;
+        });
 
         // stop 唤醒，直接退出循环，结束线程
         if(_stop) break;
 
         // 只创建这么多次，成不成功看天命，总比死循环合适
         size_t cnt = _connections.size();
-        while(cnt++ < _pool_opt->mn()) create_connection();
+        while(cnt++ < _pool_opt->mn() && _total < _pool_opt->limit()) create_connection();
     }
     printf("create thread ended!\n");
 }
