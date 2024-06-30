@@ -101,6 +101,7 @@ typename ConnectionPool<Connection>::ConnectionPtr
 
         // 等待连接队列不为空，等待失败了则表示获取失败
         if(!_cv_get.wait_for(uq, timeout, [this]() { return !_connections.empty(); })) {
+            _cv_create.notify_one();
             return nullptr;
         }
         assert(!_connections.empty() && "get connection from empty queue");
