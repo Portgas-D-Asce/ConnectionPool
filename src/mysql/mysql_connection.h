@@ -17,7 +17,7 @@ private:
 public:
     explicit MysqlConnection(ConnectionOptionPtr opt) : _opt(std::move(opt)), _db("mysql"), _ctx(nullptr) {}
 
-    ~MysqlConnection() override { if(!_ctx) mysql_close(_ctx); }
+    ~MysqlConnection() override { if(_ctx) mysql_close(_ctx); }
 
     auto ctx() const { return _ctx; }
 

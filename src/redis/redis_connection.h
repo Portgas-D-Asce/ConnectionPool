@@ -16,7 +16,7 @@ private:
 public:
     explicit RedisConnection(ConnectionOptionPtr opt) : _opt(std::move(opt)), _ctx(nullptr) {}
 
-    ~RedisConnection() override { if(!_ctx) redisFree(_ctx); }
+    ~RedisConnection() override { if(_ctx) redisFree(_ctx); }
 
     auto ctx() const { return _ctx; }
 
