@@ -15,19 +15,19 @@ public:
 
     virtual ~ConnectionOption() = default;
 
-    std::string host() const {
+    [[nodiscard]] std::string host() const {
         return _host;
     }
 
-    size_t port() const {
+    [[nodiscard]] size_t port() const {
         return _port;
     }
 
-    std::string user() const {
+    [[nodiscard]] std::string user() const {
         return _user;
     }
 
-    std::string passwd() const {
+    [[nodiscard]] std::string passwd() const {
         return _passwd;
     }
 };

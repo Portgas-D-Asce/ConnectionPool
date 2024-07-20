@@ -2,7 +2,7 @@
 #define CONNECTIONPOOL_MYSQL_CONNECTION_H
 #include <mysql.h>
 #include "mysql_connection_option.h"
-#include "../connection_pool/connection.h"
+#include "connection_pool/connection.h"
 
 
 class MysqlConnection : public Connection {
@@ -23,16 +23,5 @@ public:
 
     bool connect(const struct timeval& timeout) override;
 };
-
-bool MysqlConnection::connect(const struct timeval& timeout) {
-    _ctx = mysql_init(nullptr);
-
-    MYSQL* ptr = mysql_real_connect(_ctx, _opt->host().c_str(), _opt->user().c_str(),
-                                    _opt->passwd().c_str(),_db.c_str(), _opt->port(),
-                                    nullptr, 0);
-
-    ptr ? printf("connection success!\n") : printf("connection failed!\n");
-    return ptr;
-}
 
 #endif //CONNECTIONPOOL_MYSQL_CONNECTION_H

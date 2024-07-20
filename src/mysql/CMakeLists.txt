@@ -1,13 +1,9 @@
-cmake_minimum_required(VERSION 3.26)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} mysql_src)
 
-set(CMAKE_CXX_STANDARD 17)
+add_library(mysql_pool SHARED ${mysql_src})
+target_link_libraries(mysql_pool mysqlclient)
 
-add_compile_options(-O2)
+install(TARGETS mysql_pool)
 
-include_directories(/usr/local/mysql-8.0.30-macos12-arm64/include)
-
-link_directories(/usr/local/mysql-8.0.30-macos12-arm64/lib)
-
-add_executable(mysql mysql.cpp)
-
-target_link_libraries(mysql mysqlclient)
+file(GLOB headers ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
+install(FILES ${headers} DESTINATION include/mysql)

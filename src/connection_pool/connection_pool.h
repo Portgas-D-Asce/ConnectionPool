@@ -2,9 +2,11 @@
 #define CONNECTIONPOOL_CONNECTION_POOL_H
 #include <queue>
 #include <string>
+#include <cassert>
 #include <mutex>
+#include <condition_variable>
 #include <thread>
-#include "../singleton/singleton.h"
+#include "singleton/singleton.h"
 
 class ConnectionPoolOption {
 private:
@@ -17,19 +19,19 @@ public:
     explicit ConnectionPoolOption(size_t mn = 4, size_t mx = 16, size_t limit = 64, size_t idle = 10000)
         : _mn(mn), _mx(mx), _limit(limit), _idle(idle) {}
 
-    size_t mn() const {
+    [[nodiscard]] size_t mn() const {
         return _mn;
     }
 
-    size_t mx() const {
+    [[nodiscard]] size_t mx() const {
         return _mx;
     }
 
-    size_t idle() const {
+    [[nodiscard]] size_t idle() const {
         return _idle;
     }
 
-    size_t limit() const {
+    [[nodiscard]] size_t limit() const {
         return _limit;
     }
 };

@@ -1,6 +1,7 @@
 #include <cassert>
-#include "../mysql/mysql_connection.h"
-#include "../connection_pool/connection_pool.h"
+#include "connection_pool/connection_pool.h"
+#include "mysql/mysql_connection.h"
+
 
 using namespace std;
 

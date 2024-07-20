@@ -14,13 +14,13 @@ public:
 
     virtual ~Connection() = default;
 
-    // 要么禁止 connection 拷贝，要么自定义 connection 拷贝构造、赋值运算符，否则会导致 ctx 指针二次释放
+    // 禁止 connection 拷贝，否则会导致 ctx 指针二次释放
     Connection(const Connection&) = delete;
     Connection& operator=(const Connection&) = delete;
 
     virtual bool connect(const struct timeval& timeout) = 0;
 
-    bool flag() const {
+    [[nodiscard]] bool flag() const {
         return _flag;
     }
 

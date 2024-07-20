@@ -1,10 +1,23 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.20)
 project(ConnectionPool)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_compile_options(-O2)
+set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/output)
 
-add_subdirectory(src/redis)
+find_package(hiredis 1.2.0 REQUIRED)
+if (NOT hiredis_FOUND)
+    message(FATAL_ERROR "not found hiredis!")
+else ()
+    message(STATUS ${hiredis_LIBRARIES})
+    message(STATUS ${hiredis_INCLUDE_DIRS})
+    include_directories(${hiredis_INCLUDE_DIRS})
+endif ()
 
-add_subdirectory(src/mysql)
+# find_package(mysqlclient REQUIRED)
+# include_directories(/usr/local/mysql-8.0.30-macos12-arm64/include)
+# link_directories(/usr/local/mysql-8.0.30-macos12-arm64/lib)
+
+add_subdirectory(src)
+
+add_subdirectory(example)
