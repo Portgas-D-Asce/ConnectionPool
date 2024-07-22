@@ -5,6 +5,8 @@ add_subdirectory(singleton)
 
 add_subdirectory(connection_pool)
 
-add_subdirectory(redis)
+# todo 添加选项控制是否生成
+add_subdirectory(redis_pool)
 
-# add_subdirectory(mysql)
+# todo 添加选项控制是否生成
+add_subdirectory(mysql_pool)

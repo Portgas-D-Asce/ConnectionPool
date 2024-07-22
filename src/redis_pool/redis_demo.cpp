@@ -2,8 +2,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
-#include <hiredis/hiredis.h>
-#include "redis/redis_connection.h"
+#include "redis_pool/redis_connection.h"
 #include "connection_pool/connection_pool.h"
 using namespace std;
 
