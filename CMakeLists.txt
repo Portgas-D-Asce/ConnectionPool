@@ -112,4 +112,5 @@ install(
     ${INSTALL_CMAKEDIR}
 )
 
-include(CMakeCPack.cmake)
+# cpack 打包
+include(cmake/CMakeCPack.cmake)

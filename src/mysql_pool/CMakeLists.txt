@@ -7,9 +7,6 @@ if (NOT MYSQL_VERSION)
     message(FATAL_ERROR "find mysql failed!")
 endif ()
 
-set(mysql_header ${MYSQL_INCLUDE_DIR})
-set(mysql_lib_dir ${MYSQL_LIB_DIR})
-
 add_library(mysql_pool SHARED)
 
 target_sources(mysql_pool
