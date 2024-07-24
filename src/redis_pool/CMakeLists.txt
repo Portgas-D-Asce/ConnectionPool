@@ -66,6 +66,8 @@ target_link_libraries(redis_pool
     # find_package 和 fetchcontent_makeavailable 可以统一使用别名模式
     # 理论上 hiredis 与 hiredis::hiredis 都一样，但 hiredis cmake 可能有问题
     hiredis::hiredis
+    # spdlog::spdlog_header_only
+    $<BUILD_INTERFACE:spdlog::spdlog>
 )
 
 # 设置属性

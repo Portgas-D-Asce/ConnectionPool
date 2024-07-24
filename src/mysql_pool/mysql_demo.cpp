@@ -1,5 +1,6 @@
 #include <cassert>
 #include <mysql.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 #include "singleton/singleton.h"
 #include "connection_pool/connection_pool.h"
 #include "mysql_pool/mysql_connection.h"
@@ -8,6 +9,8 @@ using namespace std;
 
 
 int main() {
+    spdlog::set_default_logger(spdlog::stdout_color_mt("stdout colored"));
+
     ConnectionPool<MysqlConnection>& pool = Singleton<ConnectionPool<MysqlConnection>>::get_instance();
 
     auto routing = [&pool]() {
@@ -35,6 +38,8 @@ int main() {
     for(int i = 0; i < 100; ++i) {
         ts[i]->join();
     }
+
+    Singleton<ConnectionPool<MysqlConnection>>::destroy();
 
     return 0;
 }

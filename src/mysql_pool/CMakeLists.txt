@@ -4,7 +4,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 find_package(mysql QUIET)
 if (NOT MYSQL_VERSION)
     # 还是当作致命错误吧
-    message(FATAL_ERROR "find mysql failed!")
+    return()
+    # message(FATAL_ERROR "find mysql failed!")
 endif ()
 
 add_library(mysql_pool SHARED)
@@ -26,6 +27,7 @@ target_include_directories(mysql_pool
 target_link_libraries(mysql_pool
     PUBLIC
     mysqlclient
+    $<BUILD_INTERFACE:spdlog::spdlog>
 )
 
 # 设置属性

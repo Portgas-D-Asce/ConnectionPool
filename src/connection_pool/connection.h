@@ -2,6 +2,8 @@
 #define CONNECTIONPOOL_CONNECTION_H
 #include <memory>
 #include <chrono>
+// 为什么这块可以找到 spdlog ？？？？？
+#include <spdlog/spdlog.h>
 
 class Connection {
 private:
@@ -40,11 +42,12 @@ public:
 
     // 自定义智能指针释放函数
     static void deleter(Connection* p) {
+        assert(p != nullptr && "delete a nullptr connection");
         if(p->_flag) {
-            printf("delete connection* p\n");
+            spdlog::info("release connection(not ctx)");
             delete p;
         } else {
-            printf("do nothing when deleting connection* p\n");
+            spdlog::info("recycle connection {}", static_cast<void*>(p));
         }
     }
 };

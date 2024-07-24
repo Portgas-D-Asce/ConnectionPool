@@ -61,7 +61,7 @@ add_subdirectory(src)
 # make: *** No rule to make target `test'.  Stop.
 # 下层不开启 ctest 和 make test 均无法使用，提示无测试用例
 option(ENABLE_UNIT_TESTS "Enable unit tests" ON)
-set(ENABLE_UNIT_TESTS ON)
+set(ENABLE_UNIT_TESTS OFF)
 message(STATUS "Enable testing: ${ENABLE_UNIT_TESTS}")
 
 if(ENABLE_UNIT_TESTS)

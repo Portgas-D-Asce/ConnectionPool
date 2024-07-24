@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
+#include <spdlog/sinks/stdout_color_sinks.h>
 #include "redis_pool/redis_connection.h"
 #include "connection_pool/connection_pool.h"
 using namespace std;
@@ -55,6 +56,8 @@ static void example_argv_command(redisContext *c, size_t n) {
 }
 
 int main() {
+    spdlog::set_default_logger(spdlog::stdout_color_mt("stdout colored"));
+
     ConnectionPool<RedisConnection>& pool = Singleton<ConnectionPool<RedisConnection>>::get_instance();
 
     auto routing = [&pool]() {
@@ -124,6 +127,10 @@ int main() {
     for(int i = 0; i < 100; ++i) {
         ts[i]->join();
     }
+
+    // 保证单例先于 spdlog 释放，否则 spdlog 都释放了
+    // 单例析构函数还在用 spdlog 打印日志，导致 core dump
+    Singleton<ConnectionPool<RedisConnection>>::destroy();
 
     return 0;
 }

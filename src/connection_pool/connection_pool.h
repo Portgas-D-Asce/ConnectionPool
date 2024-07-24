@@ -6,6 +6,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <thread>
+#include <spdlog/spdlog.h>
 #include "singleton/singleton.h"
 
 class ConnectionPoolOption {
@@ -121,7 +122,7 @@ typename ConnectionPool<Connection>::ConnectionPtr
         conn->flag(true);
     }
 
-    printf("a connection was used\n");
+    spdlog::info("a connection was used");
 
     // 通知创建/销毁连接线程
     _cv_create.notify_one();
@@ -196,7 +197,7 @@ void ConnectionPool<Connection>::recycle_connection(Connection* p) {
 
     // 通知创建/销毁线程
     _cv_destroy.notify_one();
-    printf("recycle a connection\n");
+    spdlog::info("recycle a connection");
 }
 
 template<typename Connection>
@@ -217,7 +218,7 @@ void ConnectionPool<Connection>::create_routing() {
         size_t cnt = _connections.size();
         while(cnt++ < _pool_opt->mn() && _total < _pool_opt->limit()) create_connection();
     }
-    printf("create thread ended!\n");
+    spdlog::info("create thread ended");
 }
 
 template<typename Connection>
@@ -239,7 +240,7 @@ void ConnectionPool<Connection>::destroy_routing() {
 
         while(check()) destroy_connection();
     }
-    printf("destroy thread ended!\n");
+    spdlog::info("destroy thread ended");
 }
 
 #endif //CONNECTIONPOOL_CONNECTION_POOL_H

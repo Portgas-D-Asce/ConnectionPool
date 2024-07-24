@@ -13,6 +13,13 @@ public:
         });
         return *_instance;
     }
+
+    static void destroy() {
+        static std::once_flag flag;
+        std::call_once(flag, [&]() {
+            _instance.reset(nullptr);
+        });
+    }
 private:
     static std::unique_ptr<T> _instance;
 };
