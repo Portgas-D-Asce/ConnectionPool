@@ -1,17 +1,14 @@
 
-project(mysql_pool VERSION 1.0.0)
-
 # 追加模块搜索路径
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 find_package(mysql QUIET)
 if (NOT MYSQL_VERSION)
     # 还是当作致命错误吧
     message(FATAL_ERROR "find mysql failed!")
-else ()
-    set(mysql_header ${MYSQL_INCLUDE_DIR})
-    set(mysql_lib_dir ${MYSQL_LIB_DIR})
 endif ()
 
+set(mysql_header ${MYSQL_INCLUDE_DIR})
+set(mysql_lib_dir ${MYSQL_LIB_DIR})
 
 add_library(mysql_pool SHARED)
 
@@ -24,12 +21,9 @@ target_sources(mysql_pool
 
 target_include_directories(mysql_pool
     PUBLIC
-    ${mysql_header}
-)
-
-target_link_directories(mysql_pool
-    PUBLIC
-    ${mysql_lib_dir}
+    # $<BUILD_INTERFACE:${mysql_header}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+    $<INSTALL_INTERFACE:include>
 )
 
 target_link_libraries(mysql_pool
@@ -50,10 +44,12 @@ set_target_properties(mysql_pool
     WINDOWS_EXPORT_ALL_SYMBOLS ON
 )
 
-# 安装
+
 install(
     TARGETS
     mysql_pool
+    EXPORT
+    connection_pool_targets
     ARCHIVE
     DESTINATION ${INSTALL_LIBDIR}
     COMPONENT lib
@@ -64,7 +60,6 @@ install(
     DESTINATION ${INSTALL_LIBDIR}
     COMPONENT lib
     PUBLIC_HEADER
-    # 目标属性中定义的头文件会自动安装
     DESTINATION ${INSTALL_INCLUDEDIR}/mysql_pool
     COMPONENT dev
 )
@@ -77,7 +72,6 @@ target_sources(mysql_demo
 
 target_link_libraries(mysql_demo
     PRIVATE
-    # 同级目录也是可以感知到的
     mysql_pool
     pthread
 )

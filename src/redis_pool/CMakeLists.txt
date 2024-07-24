@@ -1,6 +1,4 @@
 
-project(redis_pool VERSION 1.0.0)
-
 # 依赖项 hiredis 处理
 find_package(hiredis 1.2.0 QUIET)
 # 如果没找到则从仓库直接拉取
@@ -10,8 +8,8 @@ if (NOT hiredis_FOUND)
     # 拉取声明
     fetchcontent_declare(hiredis
         GIT_REPOSITORY https://github.com/redis/hiredis.git
-        GIT_TAG        v1.2.0
-        # 拉取的源码将被解压到哪个文件夹
+        GIT_TAG v1.2.0
+        # 拉取的源码将被解压到哪个文件夹，hiredis target_include_directories bug 规避
         SOURCE_DIR ${CMAKE_BINARY_DIR}/_deps/hiredis
     )
     fetchcontent_makeavailable(hiredis)
@@ -19,21 +17,15 @@ if (NOT hiredis_FOUND)
     if(NOT hiredis_POPULATED)
         # 还是当成致命错误吧
         message(FATAL_ERROR "fetch hiredis failed!")
-    # 拉取成功
-    else ()
-        message(STATUS "fetch hiredis succeeded.")
-        message(STATUS ${hiredis_SOURCE_DIR})
-        message(STATUS ${hiredis_BINARY_DIR})
-        # 设置头文件包含目录 ！！！！！！
-        set(hiredis_header ${hiredis_SOURCE_DIR}/..)
     endif ()
-# 如果找到了直接使用
-else ()
-    message(STATUS ${hiredis_LIBRARIES})
-    message(STATUS ${hiredis_INCLUDE_DIRS})
-    # 设置头文件包含目录！！！！！！！
-    set(hiredis_header ${hiredis_INCLUDE_DIRS})
+    # 拉取成功
+    # message(STATUS "fetch hiredis succeeded.")
+    # message(STATUS ${hiredis_SOURCE_DIR})
+    # message(STATUS ${hiredis_BINARY_DIR})
 endif ()
+# 如果找到了直接使用
+# message(STATUS ${hiredis_LIBRARIES})
+# message(STATUS ${hiredis_INCLUDE_DIRS})
 
 # 创建动态库
 add_library(redis_pool SHARED)
@@ -46,21 +38,33 @@ target_sources(redis_pool
     redis_connection_option.cpp
 )
 
-# 追加 include 目录
-# message(STATUS ${hiredis_header})
+# 很关键的地方: 自己在用，但更重要的是供别人使用！！！！！
+# 不是 redis_pool 需要用到的 hiredis 头文件目录
+# 而是 redis_pool 将向外提供的头文件目录
 target_include_directories(redis_pool
-    # 需要设置为 public 将其暴露给 redis-demo
-    # 否则 redis-demo 需要显示包含
     PUBLIC
-    ${hiredis_header}
+    # 构建时导出的 include 目录
+    # fetchcontent_makeavailable 成功后，自带以下包含目录
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+    # 安装后导出的 include 目录，两者需要保持一致，否则会像 hiredis 那样尴尬
+    # find_package 查找到结果，自带以下包含目录
+    $<INSTALL_INTERFACE:include>
 )
 
-# 添加依赖库
+# find_package、fetchcontent_makeavailable 返回的不仅仅是一个库
+# 还包含了库上定义的符号 INTERFACE_INCLUDE_DIRECTORIES 等
+# 设置了库查询目录，找到的仅仅是一个什么都不带的库
+# 使用只能指针管理内存，就不要在混合使用普通指针了，会出问题的
+# target_link_directories(redis_pool
+#     PUBLIC
+#     $<BUILD_INTERFACE:${CMAKE_INSTALL_PREFIX}/lib>
+#     $<INSTALL_INTERFACE:lib>
+# )
+
 target_link_libraries(redis_pool
-    # 需要设置为 public 将其暴露给 redis-demo
-    # 否则 redis-demo 需要显示链接
     PUBLIC
-    # 无论哪种方式，都可以使用该方式表示
+    # find_package 和 fetchcontent_makeavailable 可以统一使用别名模式
+    # 理论上 hiredis 与 hiredis::hiredis 都一样，但 hiredis cmake 可能有问题
     hiredis::hiredis
 )
 
@@ -77,10 +81,14 @@ set_target_properties(redis_pool
     WINDOWS_EXPORT_ALL_SYMBOLS ON
 )
 
+
 # 安装
 install(
     TARGETS
     redis_pool
+    # 安装的文件导出到哪个目标，后续用于生成 targets 文件
+    EXPORT
+    connection_pool_targets
     ARCHIVE
     DESTINATION ${INSTALL_LIBDIR}
     COMPONENT lib
@@ -96,6 +104,7 @@ install(
     COMPONENT dev
 )
 
+
 # 测试 demo
 add_executable(redis_demo)
 target_sources(redis_demo
@@ -110,6 +119,14 @@ target_link_libraries(redis_demo
     pthread
 )
 
+# 获取别名
+# get_target_property(_aliased hiredis::hiredis ALIASED_TARGET)
+# if(_aliased)
+#     message(STATUS "The name hiredis::hiredis is an ALIAS for ${_aliased}.")
+# endif()
+
+# 输出目标属性，通常只有 INTERFACE_INCLUDE_DIRECTORIES 设置了
+# BUILD_INTERFACE INSTALL_INTERFACE
 # include(CMakePrintHelpers)
 # cmake_print_properties(
 #     TARGETS

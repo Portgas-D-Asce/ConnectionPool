@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 # 指定项目名称
-project(ConnectionPool VERSION 1.0.0)
+project(connection_pool VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -42,7 +42,7 @@ else()
     set(DEF_INSTALL_CMAKEDIR share/cmake/${PROJECT_NAME})
 endif()
 set(INSTALL_CMAKEDIR ${DEF_INSTALL_CMAKEDIR} CACHE PATH "Installation directory for CMake files")
-
+message(STATUS ${INSTALL_CMAKEDIR})
 # 打印所有类型安装目录
 message(STATUS "Project will be installed to ${CMAKE_INSTALL_PREFIX}")
 foreach(p LIB BIN INCLUDE CMAKE)
@@ -51,13 +51,17 @@ foreach(p LIB BIN INCLUDE CMAKE)
     unset(_path)
 endforeach()
 
+
+# 源码模块
 add_subdirectory(src)
 
+
+# 测试模块
 # 顶层不开启 ctest 可以正常使用，make test 无法使用
 # make: *** No rule to make target `test'.  Stop.
 # 下层不开启 ctest 和 make test 均无法使用，提示无测试用例
-option(ENABLE_UNIT_TESTS "Enable unit tests" OFF)
-set(ENABLE_UNIT_TESTS OFF)
+option(ENABLE_UNIT_TESTS "Enable unit tests" ON)
+set(ENABLE_UNIT_TESTS ON)
 message(STATUS "Enable testing: ${ENABLE_UNIT_TESTS}")
 
 if(ENABLE_UNIT_TESTS)
@@ -65,6 +69,47 @@ if(ENABLE_UNIT_TESTS)
     add_subdirectory(test)
 endif ()
 
+# 安装 targets、targets-release 文件
+install(
+    EXPORT
+    # 导出目标
+    connection_pool_targets
+    NAMESPACE
+    # 命名空间
+    "${PROJECT_NAME}::"
+    DESTINATION
+    # 安装目录
+    ${INSTALL_CMAKEDIR}
+    COMPONENT
+    dev
+)
+
+# 生成 config-version 文件
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+    # 输出目录
+    ${CMAKE_BINARY_DIR}/connection_pool-config-version.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+# 生成 config 文件
+configure_package_config_file(
+    # config 文件模版
+    ${CMAKE_SOURCE_DIR}/cmake/connection_pool-config.cmake.in
+    # 生成代码位置
+    ${CMAKE_BINARY_DIR}/connection_pool-config.cmake
+    # 必要参数，只是作为参数传入，不会真正安装
+    INSTALL_DESTINATION ${INSTALL_CMAKEDIR}
+)
+
+# 安装 config、config-version 文件
+install(
+    FILES
+    ${CMAKE_BINARY_DIR}/connection_pool-config-version.cmake
+    ${CMAKE_BINARY_DIR}/connection_pool-config.cmake
+    DESTINATION
+    ${INSTALL_CMAKEDIR}
+)
 
 include(CMakeCPack.cmake)
-

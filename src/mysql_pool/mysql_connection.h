@@ -19,7 +19,7 @@ public:
 
     ~MysqlConnection() override { if(_ctx) mysql_close(_ctx); }
 
-    auto ctx() const { return _ctx; }
+    [[nodiscard]] auto ctx() const { return _ctx; }
 
     bool connect(const struct timeval& timeout) override;
 };
