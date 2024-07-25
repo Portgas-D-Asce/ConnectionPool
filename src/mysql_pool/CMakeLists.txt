@@ -14,7 +14,6 @@ target_sources(mysql_pool
     PRIVATE
     # aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} mysql_src)
     mysql_connection.cpp
-    mysql_connection_option.cpp
 )
 
 target_include_directories(mysql_pool
@@ -28,6 +27,7 @@ target_link_libraries(mysql_pool
     PUBLIC
     mysqlclient
     $<BUILD_INTERFACE:spdlog::spdlog>
+    $<BUILD_INTERFACE:tomlplusplus::tomlplusplus>
 )
 
 # 设置属性
@@ -38,7 +38,7 @@ set_target_properties(mysql_pool
     OUTPUT_NAME "mysql_pool"
     DEBUG_POSTFIX "_d"
     # file(GLOB headers ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
-    PUBLIC_HEADER "mysql_connection.h;mysql_connection_option.h"
+    PUBLIC_HEADER "mysql_connection.h"
     MACOSX_RPATH ON
     WINDOWS_EXPORT_ALL_SYMBOLS ON
 )

@@ -7,6 +7,8 @@
 #include <condition_variable>
 #include <thread>
 #include <spdlog/spdlog.h>
+#include <toml++/toml.h>
+#include "connection_option.h"
 #include "singleton/singleton.h"
 
 class ConnectionPoolOption {
@@ -17,7 +19,7 @@ private:
     size_t _idle;
 public:
     // load from config file generally
-    explicit ConnectionPoolOption(size_t mn = 4, size_t mx = 16, size_t limit = 64, size_t idle = 10000)
+    explicit ConnectionPoolOption(size_t mn, size_t mx, size_t limit, size_t idle)
         : _mn(mn), _mx(mx), _limit(limit), _idle(idle) {}
 
     [[nodiscard]] size_t mn() const {
@@ -41,18 +43,15 @@ public:
 template<typename Connection>
 class ConnectionPool {
 public:
-    using ConnectionOption = typename Connection::ConnectionOption;
-    using ConnectionOptionPtr = typename Connection::ConnectionOptionPtr;
-    using ConnectionPtr = typename Connection::ConnectionPtr;
-    using ConnectionPoolPtr = std::shared_ptr<ConnectionPoolOption>;
     using MilliSecond = std::chrono::duration<size_t, std::milli>;
 private:
+    std::string _config_file;
     // 连接配置
-    ConnectionOptionPtr _conn_opt;
+    std::shared_ptr<ConnectionOption> _conn_opt;
     // 线程池配置
-    ConnectionPoolPtr _pool_opt;
+    std::shared_ptr<ConnectionPoolOption> _pool_opt;
     // 空闲连接队列
-    std::queue<ConnectionPtr> _connections;
+    std::queue<std::shared_ptr<Connection>> _connections;
     // 创建的全部连接数
     size_t _total;
     bool _stop;
@@ -64,20 +63,17 @@ private:
     mutable std::condition_variable _cv_destroy;
     // 获取连接线程条件变量
     mutable std::condition_variable _cv_get;
-
     // 创建/销毁连接线程
     std::shared_ptr<std::thread> _create, _destroy;
 
 public:
-    ConnectionPtr get(MilliSecond timeout = static_cast<MilliSecond>(1000));
+    std::shared_ptr<Connection> get(MilliSecond timeout = static_cast<MilliSecond>(1000));
 private:
     // single pattern need this
     friend class std::default_delete<ConnectionPool>;
     friend class Singleton<ConnectionPool>;
 
-    // singleton class's constructor params loaded from config file generally
-    ConnectionPool();
-
+    explicit ConnectionPool(std::string config_file);
     ~ConnectionPool();
 
 private:
@@ -93,9 +89,71 @@ private:
 };
 
 template<typename Connection>
-typename ConnectionPool<Connection>::ConnectionPtr
-    ConnectionPool<Connection>::get(ConnectionPool<Connection>::MilliSecond timeout) {
-    ConnectionPtr conn = nullptr;
+ConnectionPool<Connection>::ConnectionPool(std::string config_file)
+    : _config_file(std::move(config_file)), _total(0), _stop(false) {
+
+    // singleton class's constructor params loaded from config file generally
+    auto config = toml::parse_file(_config_file);
+
+    // 构建连接选项
+    std::string host = config["connection"]["host"].value_or("127.0.0.1");
+    size_t port = config["connection"]["port"].value_or(0);
+    std::string db = config["connection"]["db"].value_or("");
+    std::string user = config["connection"]["user"].value_or("");
+    std::string passwd = config["connection"]["passwd"].value_or("");
+    _conn_opt = std::make_shared<ConnectionOption>(host, port, db, user, passwd);
+
+    // 构建连接池选项
+    size_t mn = config["connection_pool"]["mn"].value_or(4);
+    size_t mx = config["connection_pool"]["mx"].value_or(16);
+    size_t limit = config["connection_pool"]["limit"].value_or(64);
+    size_t idle = config["connection_pool"]["idle"].value_or(10000);
+    _pool_opt = std::make_shared<ConnectionPoolOption>(mn, mx, limit, idle);
+
+    spdlog::info("connection pool loaded from config file: {}", _config_file);
+    spdlog::info("loaded host: {}", _conn_opt->host());
+    spdlog::info("loaded port: {}", _conn_opt->port());
+    spdlog::info("loaded user: {}", _conn_opt->user());
+    spdlog::info("mn: {}", _pool_opt->mn());
+    spdlog::info("mx: {}", _pool_opt->mx());
+    spdlog::info("limit: {}", _pool_opt->limit());
+    spdlog::info("idle: {}", _pool_opt->idle());
+
+    // 创建最小连接个数个连接
+    for(size_t i = 0; i < _pool_opt->mn(); ++i) create_connection();
+
+    // 补充连接线程
+    _create = std::make_shared<std::thread>(&ConnectionPool::create_routing, this);
+    // 销毁连接线程
+    _destroy = std::make_shared<std::thread>(&ConnectionPool::destroy_routing, this);
+}
+
+template<typename Connection>
+ConnectionPool<Connection>::~ConnectionPool() {
+    // 停止所有连接池
+    {
+        std::lock_guard<std::mutex> lg(_mtx);
+        _stop = true;
+    }
+    // 通知创建/释放连接线程，并等待结束
+    _cv_create.notify_one();
+    _cv_destroy.notify_one();
+    _create->join();
+    _destroy->join();
+
+    // 回收所有连接，大括号是必要的
+    {
+        std::unique_lock<std::mutex> uq(_mtx);
+        while(_total) {
+            _cv_destroy.wait(uq, [this](){ return !_connections.empty(); });
+            while(!_connections.empty()) destroy_connection();
+        }
+    }
+}
+
+template<typename Connection>
+std::shared_ptr<Connection> ConnectionPool<Connection>::get(ConnectionPool<Connection>::MilliSecond timeout) {
+    std::shared_ptr<Connection> conn = nullptr;
 
     {
         std::unique_lock<std::mutex> uq(_mtx);
@@ -110,7 +168,7 @@ typename ConnectionPool<Connection>::ConnectionPtr
         assert(!_connections.empty() && "get connection from empty queue");
 
         // 正常来说，是不应这样的，但特殊场景
-        conn = ConnectionPtr(_connections.front().get(), [this](auto&& ptr) {
+        conn = std::shared_ptr<Connection>(_connections.front().get(), [this](auto&& ptr) {
             recycle_connection(std::forward<decltype(ptr)>(ptr));
         });
 
@@ -122,7 +180,7 @@ typename ConnectionPool<Connection>::ConnectionPtr
         conn->flag(true);
     }
 
-    spdlog::info("a connection was used");
+    spdlog::debug("a connection was used");
 
     // 通知创建/销毁连接线程
     _cv_create.notify_one();
@@ -130,42 +188,8 @@ typename ConnectionPool<Connection>::ConnectionPtr
 }
 
 template<typename Connection>
-// singleton class's constructor params loaded from config file generally
-ConnectionPool<Connection>::ConnectionPool() : _conn_opt(std::make_shared<ConnectionOption>()),
-                   _pool_opt(std::make_shared<ConnectionPoolOption>()), _total(0), _stop(false) {
-    for(size_t i = 0; i < _pool_opt->mn(); ++i) create_connection();
-
-    _create = std::make_shared<std::thread>(&ConnectionPool::create_routing, this);
-    _destroy = std::make_shared<std::thread>(&ConnectionPool::destroy_routing, this);
-}
-
-template<typename Connection>
-// singleton class's constructor params loaded from config file generally
-ConnectionPool<Connection>::~ConnectionPool() {
-    // 停止所有连接池
-    {
-        std::lock_guard<std::mutex> lg(_mtx);
-        _stop = true;
-    }
-    // 通知创建/释放连接线程，并等待结束
-    _cv_create.notify_one();
-    _cv_destroy.notify_one();
-    _create->join();
-    _destroy->join();
-
-    // 回收所有连接，中括号是必要的
-    {
-        std::unique_lock<std::mutex> uq(_mtx);
-        while(_total) {
-            _cv_destroy.wait(uq, [this](){ return !_connections.empty(); });
-            while(!_connections.empty()) destroy_connection();
-        }
-    }
-}
-
-template<typename Connection>
 void ConnectionPool<Connection>::create_connection() {
-    auto conn = ConnectionPtr(new Connection(_conn_opt), Connection::deleter);
+    auto conn = std::shared_ptr<Connection>(new Connection(_conn_opt), Connection::deleter);
     if(conn->connect({1, 5000})) {
         _connections.push(conn);
         _total++;
@@ -197,7 +221,7 @@ void ConnectionPool<Connection>::recycle_connection(Connection* p) {
 
     // 通知创建/销毁线程
     _cv_destroy.notify_one();
-    spdlog::info("recycle a connection");
+    spdlog::debug("recycle a connection");
 }
 
 template<typename Connection>

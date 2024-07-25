@@ -1,0 +1,12 @@
+[connection]
+host = "127.0.0.1"
+port = 3306
+db = "mysql"
+user = "root"
+passwd = "pk2147483647"
+
+[connection_pool]
+mn = 32
+mx = 64
+limit = 128
+idle = 5000

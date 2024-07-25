@@ -6,10 +6,13 @@
 template<typename T>
 class Singleton {
 public:
-    static T& get_instance() {
+    // 如何兼容零个参数
+    template<typename... Args>
+    static T& get_instance(Args&&... args) {
         static std::once_flag flag;
+        // 引用了之后会影响完美转发吗？？？？？？
         std::call_once(flag, [&]() {
-            _instance = std::unique_ptr<T>(new T());
+            _instance = std::unique_ptr<T>(new T(std::forward<Args>(args)...));
         });
         return *_instance;
     }

@@ -57,8 +57,9 @@ static void example_argv_command(redisContext *c, size_t n) {
 
 int main() {
     spdlog::set_default_logger(spdlog::stdout_color_mt("stdout colored"));
-
-    ConnectionPool<RedisConnection>& pool = Singleton<ConnectionPool<RedisConnection>>::get_instance();
+    // spdlog::set_level(spdlog::level::critical);
+    std::string config_file = "/Users/pk/Project/ConnectionPool/config/redis_pool.toml";
+    ConnectionPool<RedisConnection>& pool = Singleton<ConnectionPool<RedisConnection>>::get_instance(config_file);
 
     auto routing = [&pool]() {
         auto conn = pool.get();

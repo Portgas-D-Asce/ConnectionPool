@@ -35,7 +35,6 @@ target_sources(redis_pool
     PRIVATE
     # aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} redis_src)
     redis_connection.cpp
-    redis_connection_option.cpp
 )
 
 # 很关键的地方: 自己在用，但更重要的是供别人使用！！！！！
@@ -68,6 +67,7 @@ target_link_libraries(redis_pool
     hiredis::hiredis
     # spdlog::spdlog_header_only
     $<BUILD_INTERFACE:spdlog::spdlog>
+    $<BUILD_INTERFACE:tomlplusplus::tomlplusplus>
 )
 
 # 设置属性
@@ -78,7 +78,7 @@ set_target_properties(redis_pool
     OUTPUT_NAME "redis_pool"
     DEBUG_POSTFIX "_d"
     # file(GLOB headers ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
-    PUBLIC_HEADER "redis_connection.h;redis_connection_option.h"
+    PUBLIC_HEADER "redis_connection.h"
     MACOSX_RPATH ON
     WINDOWS_EXPORT_ALL_SYMBOLS ON
 )

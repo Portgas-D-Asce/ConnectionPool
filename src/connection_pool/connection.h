@@ -44,10 +44,10 @@ public:
     static void deleter(Connection* p) {
         assert(p != nullptr && "delete a nullptr connection");
         if(p->_flag) {
-            spdlog::info("release connection(not ctx)");
+            spdlog::debug("release connection(not ctx)");
             delete p;
         } else {
-            spdlog::info("recycle connection {}", static_cast<void*>(p));
+            spdlog::debug("recycle connection {}", static_cast<void*>(p));
         }
     }
 };

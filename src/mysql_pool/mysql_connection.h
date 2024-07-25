@@ -2,21 +2,17 @@
 #define CONNECTIONPOOL_MYSQL_CONNECTION_H
 #include <mysql.h>
 #include <spdlog/spdlog.h>
-#include "mysql_connection_option.h"
+
 #include "connection_pool/connection.h"
+#include "connection_pool/connection_option.h"
 
 
 class MysqlConnection : public Connection {
-public:
-    using ConnectionOption = MysqlConnectionOption;
-    using ConnectionOptionPtr = std::shared_ptr<ConnectionOption>;
-    using ConnectionPtr = std::shared_ptr<MysqlConnection>;
 private:
-    ConnectionOptionPtr _opt;
-    std::string _db;
+    std::shared_ptr<ConnectionOption> _opt;
     MYSQL* _ctx;
 public:
-    explicit MysqlConnection(ConnectionOptionPtr opt) : _opt(std::move(opt)), _db("mysql"), _ctx(nullptr) {}
+    explicit MysqlConnection(std::shared_ptr<ConnectionOption> opt) : _opt(std::move(opt)), _ctx(nullptr) {}
 
     ~MysqlConnection() override { if(_ctx) mysql_close(_ctx); }
 

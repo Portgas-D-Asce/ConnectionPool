@@ -4,7 +4,7 @@ bool RedisConnection::connect(const struct timeval& timeout) {
     _ctx = redisConnectWithTimeout(_opt->host().c_str(), _opt->port(), timeout);
 
     if(_ctx && !_ctx->err) {
-        spdlog::info("connect succeeded.");
+        spdlog::debug("connect succeeded.");
         return true;
     }
 
