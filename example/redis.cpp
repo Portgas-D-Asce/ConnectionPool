@@ -2,7 +2,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
-#include <spdlog/sinks/stdout_color_sinks.h>
 #include "redis_pool/redis_connection.h"
 #include "connection_pool/connection_pool.h"
 using namespace std;
@@ -56,8 +55,6 @@ static void example_argv_command(redisContext *c, size_t n) {
 }
 
 int main() {
-    spdlog::set_default_logger(spdlog::stdout_color_mt("stdout colored"));
-    // spdlog::set_level(spdlog::level::critical);
     std::string config_file = "/Users/pk/Project/ConnectionPool/config/redis_pool.toml";
     auto& pool = SingleConnectionPool<RedisConnection>::get_instance(config_file);
 

@@ -10,8 +10,8 @@ public:
     template<typename... Args>
     static T& get_instance(Args&&... args) {
         static std::once_flag flag;
-        // 引用了之后会影响完美转发吗？？？？？？
         std::call_once(flag, [&]() {
+            // 这块还有完美转发的必要么，lambda 表达式已经引用了？？？？？？？
             _instance = std::unique_ptr<T>(new T(std::forward<Args>(args)...));
         });
         return *_instance;

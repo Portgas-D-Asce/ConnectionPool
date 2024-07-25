@@ -1,7 +1,4 @@
 #include <cassert>
-#include <mysql.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include "singleton/singleton.h"
 #include "connection_pool/connection_pool.h"
 #include "mysql_pool/mysql_connection.h"
 
@@ -9,7 +6,6 @@ using namespace std;
 
 
 int main() {
-    spdlog::set_default_logger(spdlog::stdout_color_mt("stdout colored"));
     std::string config_file = "/Users/pk/Project/ConnectionPool/config/mysql_pool.toml";
     auto& pool = SingleConnectionPool<MysqlConnection>::get_instance(config_file);
 

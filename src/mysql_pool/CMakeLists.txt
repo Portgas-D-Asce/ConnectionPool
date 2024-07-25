@@ -1,12 +1,7 @@
 
 # 追加模块搜索路径
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-find_package(mysql QUIET)
-if (NOT MYSQL_VERSION)
-    # 还是当作致命错误吧
-    return()
-    # message(FATAL_ERROR "find mysql failed!")
-endif ()
+find_package(mysql REQUIRED)
 
 add_library(mysql_pool SHARED)
 
@@ -26,8 +21,8 @@ target_include_directories(mysql_pool
 target_link_libraries(mysql_pool
     PUBLIC
     mysqlclient
-    $<BUILD_INTERFACE:spdlog::spdlog>
-    $<BUILD_INTERFACE:tomlplusplus::tomlplusplus>
+    spdlog::spdlog
+    tomlplusplus::tomlplusplus
 )
 
 # 设置属性
@@ -61,16 +56,4 @@ install(
     PUBLIC_HEADER
     DESTINATION ${INSTALL_INCLUDEDIR}/mysql_pool
     COMPONENT dev
-)
-
-add_executable(mysql_demo)
-target_sources(mysql_demo
-    PRIVATE
-    mysql_demo.cpp
-)
-
-target_link_libraries(mysql_demo
-    PRIVATE
-    mysql_pool
-    pthread
 )

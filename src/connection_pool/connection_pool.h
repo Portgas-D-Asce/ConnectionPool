@@ -6,8 +6,11 @@
 #include <mutex>
 #include <condition_variable>
 #include <thread>
+
 #include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 #include <toml++/toml.h>
+
 #include "connection_option.h"
 #include "connection_pool_option.h"
 #include "singleton/singleton.h"
@@ -107,6 +110,9 @@ ConnectionPool<Connection>::ConnectionPool(std::string config_file)
     _create = std::make_shared<std::thread>(&ConnectionPool::create_routing, this);
     // 销毁连接线程
     _destroy = std::make_shared<std::thread>(&ConnectionPool::destroy_routing, this);
+
+    // 设置多线程日志
+    spdlog::set_default_logger(spdlog::stdout_color_mt("stdout colored"));
 }
 
 template<typename Connection>
