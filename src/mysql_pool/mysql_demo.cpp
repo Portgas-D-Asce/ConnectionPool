@@ -11,7 +11,7 @@ using namespace std;
 int main() {
     spdlog::set_default_logger(spdlog::stdout_color_mt("stdout colored"));
     std::string config_file = "/Users/pk/Project/ConnectionPool/config/mysql_pool.toml";
-    ConnectionPool<MysqlConnection>& pool = Singleton<ConnectionPool<MysqlConnection>>::get_instance(config_file);
+    auto& pool = SingleConnectionPool<MysqlConnection>::get_instance(config_file);
 
     auto routing = [&pool]() {
         auto conn = pool.get();
@@ -39,7 +39,7 @@ int main() {
         ts[i]->join();
     }
 
-    Singleton<ConnectionPool<MysqlConnection>>::destroy();
+    SingleConnectionPool<MysqlConnection>::destroy();
 
     return 0;
 }

@@ -59,7 +59,7 @@ int main() {
     spdlog::set_default_logger(spdlog::stdout_color_mt("stdout colored"));
     // spdlog::set_level(spdlog::level::critical);
     std::string config_file = "/Users/pk/Project/ConnectionPool/config/redis_pool.toml";
-    ConnectionPool<RedisConnection>& pool = Singleton<ConnectionPool<RedisConnection>>::get_instance(config_file);
+    auto& pool = SingleConnectionPool<RedisConnection>::get_instance(config_file);
 
     auto routing = [&pool]() {
         auto conn = pool.get();
@@ -131,7 +131,7 @@ int main() {
 
     // 保证单例先于 spdlog 释放，否则 spdlog 都释放了
     // 单例析构函数还在用 spdlog 打印日志，导致 core dump
-    Singleton<ConnectionPool<RedisConnection>>::destroy();
+    SingleConnectionPool<RedisConnection>::destroy();
 
     return 0;
 }

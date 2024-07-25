@@ -41,11 +41,16 @@ private:
 
 public:
     std::shared_ptr<Connection> get(MilliSecond timeout = static_cast<MilliSecond>(1000));
-private:
+
     // single pattern need this
     friend class std::default_delete<ConnectionPool>;
     friend class Singleton<ConnectionPool>;
+    ConnectionPool(const ConnectionPool&) = delete;
+    ConnectionPool(const ConnectionPool&&) = delete;
+    ConnectionPool& operator=(const ConnectionPool&) = delete;
+    ConnectionPool& operator=(const ConnectionPool&&) = delete;
 
+private:
     explicit ConnectionPool(std::string config_file);
     ~ConnectionPool();
 
@@ -60,6 +65,9 @@ private:
 
     void destroy_routing();
 };
+
+template<typename Connection>
+using SingleConnectionPool = Singleton<ConnectionPool<Connection>>;
 
 template<typename Connection>
 ConnectionPool<Connection>::ConnectionPool(std::string config_file)
