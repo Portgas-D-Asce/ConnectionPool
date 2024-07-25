@@ -65,8 +65,10 @@ target_link_libraries(redis_pool
     # find_package 和 fetchcontent_makeavailable 可以统一使用别名模式
     # 理论上 hiredis 与 hiredis::hiredis 都一样，但 hiredis cmake 可能有问题
     hiredis::hiredis
-    # spdlog::spdlog_header_only
-    $<BUILD_INTERFACE:spdlog::spdlog>
+
+    # 仅在编译时依赖，运行时不依赖
+    # 内部都有逻辑，被以 add_subdirectory 方式引入时，安装时，不会安装任何文件
+    $<BUILD_INTERFACE:spdlog::spdlog_header_only>
     $<BUILD_INTERFACE:tomlplusplus::tomlplusplus>
 )
 
@@ -82,7 +84,6 @@ set_target_properties(redis_pool
     MACOSX_RPATH ON
     WINDOWS_EXPORT_ALL_SYMBOLS ON
 )
-
 
 # 安装
 install(
