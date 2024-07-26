@@ -41,7 +41,7 @@ if(WIN32 AND NOT CYGWIN)
 else()
     set(DEF_INSTALL_CMAKEDIR share/cmake/${PROJECT_NAME})
 endif()
-set(INSTALL_CMAKEDIR ${DEF_INSTALL_CMAKEDIR} CACHE PATH "Installation directory for CMake files")
+set(INSTALL_CMAKEDIR ${DEF_INSTALL_CMAKEDIR})
 message(STATUS ${INSTALL_CMAKEDIR})
 # 打印所有类型安装目录
 message(STATUS "Project will be installed to ${CMAKE_INSTALL_PREFIX}")
