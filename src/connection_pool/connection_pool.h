@@ -54,6 +54,8 @@ public:
     ConnectionPool& operator=(const ConnectionPool&&) = delete;
 
 private:
+    // once singleton ConnectionPool is got, we can use this get singleton instance
+    ConnectionPool();
     explicit ConnectionPool(std::string config_file);
     ~ConnectionPool();
 
