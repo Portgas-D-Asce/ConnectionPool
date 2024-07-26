@@ -181,6 +181,9 @@ void ConnectionPool<Connection>::create_connection() {
         _connections.push(conn);
         _total++;
         assert(_total <= _pool_opt->limit() && "total connections > limit");
+        spdlog::debug("create connection succeeded.");
+    } else {
+        spdlog::warn("create connection failed!");
     }
 }
 

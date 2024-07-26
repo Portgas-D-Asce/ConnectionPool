@@ -64,7 +64,7 @@ option(ENABLE_UNIT_TESTS "Enable unit tests" ON)
 set(ENABLE_UNIT_TESTS OFF)
 message(STATUS "Enable testing: ${ENABLE_UNIT_TESTS}")
 
-add_subdirectory(example)
+# add_subdirectory(example)
 
 if(ENABLE_UNIT_TESTS)
     enable_testing()

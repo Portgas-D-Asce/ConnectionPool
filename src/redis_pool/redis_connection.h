@@ -1,7 +1,6 @@
 #ifndef CONNECTIONPOOL_REDIS_CONNECTION_H
 #define CONNECTIONPOOL_REDIS_CONNECTION_H
 #include <hiredis/hiredis.h>
-#include <spdlog/spdlog.h>
 
 #include "connection_pool/connection.h"
 #include "connection_pool/connection_option.h"

@@ -1,7 +1,6 @@
 #ifndef CONNECTIONPOOL_MYSQL_CONNECTION_H
 #define CONNECTIONPOOL_MYSQL_CONNECTION_H
 #include <mysql.h>
-#include <spdlog/spdlog.h>
 
 #include "connection_pool/connection.h"
 #include "connection_pool/connection_option.h"
