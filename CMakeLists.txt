@@ -90,7 +90,7 @@ install(
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
     # 输出目录
-    ${CMAKE_BINARY_DIR}/connection_pool-config-version.cmake
+    ${PROJECT_BINARY_DIR}/connection_pool-config-version.cmake
     VERSION ${PROJECT_VERSION}
     COMPATIBILITY SameMajorVersion
 )
