@@ -1,12 +1,8 @@
 
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_INSTALL_PREFIX})
-# 如何才能不用查找依赖第三方
-find_package(spdlog REQUIRED)
 
-find_package(hiredis REQUIRED)
-
-find_package(tomlplusplus REQUIRED)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 find_package(connection_pool REQUIRED)
 
@@ -70,10 +66,6 @@ install(
     DESTINATION ${INSTALL_BINDIR}
     COMPONENT bin
 )
-
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-
-find_package(mysql REQUIRED)
 
 add_executable(mysql_demo)
 target_sources(mysql_demo

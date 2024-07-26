@@ -45,6 +45,14 @@
 
 @PACKAGE_INIT@
 
+find_package(spdlog REQUIRED)
+
+find_package(tomlplusplus REQUIRED)
+
+find_package(hiredis REQUIRED)
+
+find_package(mysql REQUIRED)
+
 if (NOT TARGET @PROJECT_NAME@::redis_pool)
     include(${CMAKE_CURRENT_LIST_DIR}/connection_pool_targets.cmake)
 endif()
