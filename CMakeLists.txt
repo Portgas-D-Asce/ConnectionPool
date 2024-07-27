@@ -19,7 +19,7 @@ endif ()
 
 if (NOT CONNECTION_POOL_MYSQL)
     option(CONNECTION_POOL_MYSQL "Use mysql connection pool" ON)
-    set(CONNECTION_POOL_MYSQL ON)
+    set(CONNECTION_POOL_MYSQL OFF)
 endif ()
 
 if (NOT CONNECTION_POOL_UNIT_TEST)
