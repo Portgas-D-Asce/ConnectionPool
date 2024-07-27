@@ -18,7 +18,7 @@ if (NOT CONNECTION_POOL_REDIS)
 endif ()
 
 if (NOT CONNECTION_POOL_MYSQL)
-    option(CONNECTION_POOL_MYSQL "Use mysql connection pool" ON)
+    option(CONNECTION_POOL_MYSQL "Use mysql connection pool" OFF)
     set(CONNECTION_POOL_MYSQL OFF)
 endif ()
 
