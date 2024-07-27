@@ -43,7 +43,7 @@ install(
     TARGETS
     mysql_pool
     EXPORT
-    ${PROJECT_NAME}_targets
+    ${PROJECT_NAME}-targets
     ARCHIVE
     DESTINATION ${INSTALL_LIBDIR}
     COMPONENT lib

@@ -6,19 +6,19 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 find_package(connection_pool REQUIRED)
 
-# 测试 demo
-add_executable(redis_demo)
-target_sources(redis_demo
-    PRIVATE
-    redis.cpp
-)
+if (CONNECTION_POOL_REDIS)
+    add_executable(redis_demo)
+    target_sources(redis_demo
+        PRIVATE
+        redis.cpp
+    )
 
-target_link_libraries(redis_demo
-    PRIVATE
-    # 同级目录也是可以感知到的
-    connection_pool::redis_pool
-    pthread
-)
+    target_link_libraries(redis_demo
+        PRIVATE
+        connection_pool::redis_pool
+        pthread
+    )
+endif ()
 
 # 获取别名
 # get_target_property(_aliased hiredis::hiredis ALIASED_TARGET)
@@ -38,6 +38,7 @@ target_link_libraries(redis_demo
 #     INTERFACE_LINK_LIBRARIES
 # )
 
+#[[
 # 设置可执行程序的 rpath，保证其在安装后也可以找到动态链接库，从而正常运行
 file(RELATIVE_PATH _rel ${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR} ${CMAKE_INSTALL_PREFIX})
 if(APPLE)
@@ -65,20 +66,23 @@ install(
     RUNTIME
     DESTINATION ${INSTALL_BINDIR}
     COMPONENT bin
-)
+)]]
 
-add_executable(mysql_demo)
-target_sources(mysql_demo
-    PRIVATE
-    mysql.cpp
-)
+if (CONNECTION_POOL_MYSQL)
+    add_executable(mysql_demo)
+    target_sources(mysql_demo
+        PRIVATE
+        mysql.cpp
+    )
 
-target_link_libraries(mysql_demo
-    PRIVATE
-    connection_pool::mysql_pool
-    pthread
-)
+    target_link_libraries(mysql_demo
+        PRIVATE
+        connection_pool::mysql_pool
+        pthread
+    )
+endif ()
 
+#[[
 set_target_properties(mysql_demo
     PROPERTIES
     MACOSX_RPATH ON
@@ -95,3 +99,4 @@ install(
     DESTINATION ${INSTALL_BINDIR}
     COMPONENT bin
 )
+]]

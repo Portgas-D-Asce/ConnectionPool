@@ -2,7 +2,7 @@
 install(
     EXPORT
     # 导出目标
-    ${PROJECT_NAME}_targets
+    ${PROJECT_NAME}-targets
     NAMESPACE
     # 命名空间
     "${PROJECT_NAME}::"

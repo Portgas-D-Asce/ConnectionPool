@@ -96,7 +96,7 @@ install(
     redis_pool
     # 安装的文件导出到哪个目标，后续用于生成 targets 文件
     EXPORT
-    ${PROJECT_NAME}_targets
+    ${PROJECT_NAME}-targets
     ARCHIVE
     DESTINATION ${INSTALL_LIBDIR}
     COMPONENT lib

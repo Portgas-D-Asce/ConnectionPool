@@ -33,8 +33,10 @@ add_subdirectory(singleton)
 
 add_subdirectory(connection_pool)
 
-# todo 添加选项控制是否生成
-add_subdirectory(redis_pool)
+if (CONNECTION_POOL_REDIS)
+    add_subdirectory(redis_pool)
+endif ()
 
-# todo 添加选项控制是否生成
-add_subdirectory(mysql_pool)
+if (CONNECTION_POOL_MYSQL)
+    add_subdirectory(mysql_pool)
+endif ()
