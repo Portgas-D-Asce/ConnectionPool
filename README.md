@@ -19,8 +19,8 @@ optional
 
 # usage
 ```cmake
-find_package(connection_pool 1.2.0 QUIET)
-if (NOT hiredis_FOUND)
+find_package(connection_pool 1.0.0 QUIET)
+if (NOT connection_pool_FOUND)
     include(FetchContent)
     fetchcontent_declare(connection_pool
         GIT_REPOSITORY https://github.com/Portgas-D-Asce/ConnectionPool.git
@@ -32,4 +32,12 @@ if (NOT hiredis_FOUND)
         message(FATAL_ERROR "fetch connection_pool failed!")
     endif ()
 endif ()
+
+add_library(exec SHARED)
+
+target_link_libraries(exec
+    PUBLIC
+    connection_pool::redis_pool
+    # connection_pool::mysql_pool
+)
 ```
