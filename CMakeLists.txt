@@ -12,16 +12,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(cmake/base.cmake)
 
+if (NOT CONNECTION_POOL_REDIS)
+    option(CONNECTION_POOL_REDIS "Use redis connection pool" ON)
+    set(CONNECTION_POOL_REDIS ON)
+endif ()
 
-option(CONNECTION_POOL_REDIS "Use redis connection pool" ON)
-set(CONNECTION_POOL_REDIS ON)
+if (NOT CONNECTION_POOL_MYSQL)
+    option(CONNECTION_POOL_MYSQL "Use mysql connection pool" ON)
+    set(CONNECTION_POOL_MYSQL ON)
+endif ()
 
-option(CONNECTION_POOL_MYSQL "Use mysql connection pool" ON)
-set(CONNECTION_POOL_MYSQL ON)
-
-option(CONNECTION_POOL_UNIT_TEST "Enable unit test" OFF)
-set(CONNECTION_POOL_UNIT_TEST OFF)
-message(STATUS "Enable testing: ${CONNECTION_POOL_UNIT_TEST}")
+if (NOT CONNECTION_POOL_UNIT_TEST)
+    option(CONNECTION_POOL_UNIT_TEST "Enable unit test" OFF)
+    set(CONNECTION_POOL_UNIT_TEST OFF)
+endif ()
 
 # 源码模块
 add_subdirectory(src)
