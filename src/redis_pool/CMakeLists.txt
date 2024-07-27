@@ -29,7 +29,7 @@ endif ()
 
 # 创建动态库
 add_library(redis_pool SHARED)
-# add_library(connection_pool::redis_pool ALIAS redis_pool)
+add_library(connection_pool::redis_pool ALIAS redis_pool)
 
 # 添加源文件
 target_sources(redis_pool

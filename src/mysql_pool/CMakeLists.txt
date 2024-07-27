@@ -4,7 +4,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 find_package(mysql REQUIRED)
 
 add_library(mysql_pool SHARED)
-# add_library(connection_pool::mysql_pool ALIAS mysql_pool)
+add_library(connection_pool::mysql_pool ALIAS mysql_pool)
 
 target_sources(mysql_pool
     PRIVATE
