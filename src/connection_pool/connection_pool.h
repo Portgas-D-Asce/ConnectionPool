@@ -55,7 +55,7 @@ public:
 
 private:
     // once singleton ConnectionPool is got, we can use this get singleton instance
-    ConnectionPool();
+    ConnectionPool() = default;
     explicit ConnectionPool(std::string config_file);
     ~ConnectionPool();
 
