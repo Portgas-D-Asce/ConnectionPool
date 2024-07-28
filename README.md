@@ -33,11 +33,9 @@ if (NOT connection_pool_FOUND)
     endif ()
 endif ()
 
-add_library(exec SHARED)
-
 target_link_libraries(exec
     PUBLIC
-    connection_pool::redis_pool
-    # connection_pool::mysql_pool
+    $<$<BOOL:${connection_pool_FOUND}>:connection_pool::>redis_pool
+    # $<$<BOOL:${connection_pool_FOUND}>:connection_pool::>mysql_pool
 )
 ```
