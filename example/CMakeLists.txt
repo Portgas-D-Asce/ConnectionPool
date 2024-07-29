@@ -67,7 +67,7 @@ install(
 )]]
 
 if (CONNECTION_POOL_MYSQL)
-    list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+    list(APPEND CMAKE_PREFIX_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
     add_executable(mysql_demo)
     target_sources(mysql_demo

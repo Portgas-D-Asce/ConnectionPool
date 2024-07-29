@@ -1,6 +1,6 @@
 
 # 追加模块搜索路径
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_PREFIX_PATH ${PROJECT_SOURCE_DIR}/cmake)
 find_package(mysql REQUIRED)
 
 add_library(mysql_pool SHARED)
