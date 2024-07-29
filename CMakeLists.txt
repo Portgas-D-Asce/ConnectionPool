@@ -4,11 +4,7 @@ cmake_minimum_required(VERSION 3.20)
 # 指定项目名称
 project(connection_pool VERSION 1.0.0)
 
-
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 
 include(cmake/base.cmake)
 
@@ -30,7 +26,7 @@ endif ()
 # 源码模块
 add_subdirectory(src)
 
-# add_subdirectory(example)
+add_subdirectory(example)
 
 # 测试模块
 # 顶层不开启 ctest 可以正常使用，make test 无法使用
